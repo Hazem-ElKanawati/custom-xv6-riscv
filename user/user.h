@@ -1,4 +1,11 @@
 struct stat;
+struct pinfo {
+  int pid;
+  int ppid;
+  int state;
+  char name[16];
+  uint64 memsize;
+};
 
 // system calls
 int fork(void);
@@ -22,6 +29,8 @@ int getpid(void);
 char* sbrk(int);
 int sleep(int);
 int uptime(void);
+int getptable(int nproc, struct pinfo *buf);
+
 
 // ulib.c
 int stat(const char*, struct stat*);

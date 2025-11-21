@@ -5,6 +5,7 @@
 #include "memlayout.h"
 #include "spinlock.h"
 #include "proc.h"
+#include "pinfo.h"
 
 uint64
 sys_exit(void)
@@ -90,4 +91,19 @@ sys_uptime(void)
   xticks = ticks;
   release(&tickslock);
   return xticks;
+}
+
+uint64
+sys_getptable(void)
+{
+  int nproc;
+  uint64 ubuf;
+
+  // fetch integer argument
+  argint(0, &nproc);
+
+  // fetch address argument
+  argaddr(1, &ubuf);
+
+  return getptable(nproc, (char*)ubuf);
 }
