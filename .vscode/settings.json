@@ -1,0 +1,15 @@
+{
+    "files.exclude": {
+        "**/*.d": true,
+        "**/*.o": true,
+        "**/*.asm": true,
+        "**/*.sym": true,
+        "**/*.S": true,
+        "**/_*": true
+    },
+    "editor.tabSize": 2,
+    "editor.trimAutoWhitespace": true,
+    "files.trimTrailingWhitespace": true,
+    "files.trimFinalNewlines": true,
+    "files.insertFinalNewline": true
+}
