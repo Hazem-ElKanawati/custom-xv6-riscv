@@ -135,6 +135,7 @@ UPROGS=\
 	$U/_kill\
 	$U/_ln\
 	$U/_ls\
+	$U/_sleep\
 	$U/_mkdir\
 	$U/_rm\
 	$U/_sh\
