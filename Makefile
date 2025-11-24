@@ -143,6 +143,7 @@ UPROGS=\
 	$U/_usertests\
 	$U/_grind\
 	$U/_date\
+	$U/_touch\
 	$U/_wc\
 	$U/_getppid\
 	$U/_zombie\
