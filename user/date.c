@@ -1,5 +1,5 @@
-#include "kernel/types.h"  // Defines uint, MUST be first
-#include "user/user.h"     // Includes user/datetime.h automatically now
+#include "user.h"
+#include "datetime.h"   // THIS must be included
 
 int main(int argc, char *argv[]) {
   struct datetime r; // This uses the definition from user/datetime.h

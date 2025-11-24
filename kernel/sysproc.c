@@ -123,3 +123,12 @@ sys_datetime(void)
 
   return 0;
 }
+
+uint64
+sys_getppid(void)
+{
+  struct proc *p = myproc();
+  if(p->parent)
+    return p->parent->pid;
+  return 0;   // init process has no parent
+}

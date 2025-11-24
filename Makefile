@@ -143,6 +143,7 @@ UPROGS=\
 	$U/_grind\
 	$U/_date\
 	$U/_wc\
+	$U/_getppid\
 	$U/_zombie\
 
 fs.img: mkfs/mkfs README $(UPROGS)

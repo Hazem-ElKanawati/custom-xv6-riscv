@@ -1,5 +1,15 @@
-#include "datetime.h"
+#ifndef USER_H
+#define USER_H
+
+// user-space type definitions
+typedef unsigned int   uint;
+typedef unsigned long  uint64;
+
+// forward declarations only (no kernel headers here)
 struct stat;
+struct pinfo;
+struct datetime;
+
 struct pinfo {
   int pid;
   int ppid;
@@ -33,6 +43,7 @@ int sleep(int);
 int uptime(void);
 int getptable(int nproc, struct pinfo *buf);
 int datetime( struct datetime *dt);
+int getppid(void);
 
 // ulib.c
 int stat(const char*, struct stat*);
@@ -50,3 +61,5 @@ int memcmp(const void *, const void *, uint);
 void *memcpy(void *, const void *, uint);
 void* malloc(uint);
 void free(void*);
+
+#endif

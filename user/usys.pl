@@ -38,3 +38,4 @@ entry("sleep");
 entry("uptime");
 entry("getptable");
 entry("datetime");
+entry("getppid");
