@@ -21,6 +21,7 @@ OBJS = \
   $K/bio.o \
   $K/fs.o \
   $K/log.o \
+  $K/datetime.o\
   $K/sleeplock.o \
   $K/file.o \
   $K/pipe.o \
@@ -77,6 +78,7 @@ endif
 ifneq ($(shell $(CC) -dumpspecs 2>/dev/null | grep -e '[^f]nopie'),)
 CFLAGS += -fno-pie -nopie
 endif
+CFLAGS += -DBOOT_EPOCH=$(shell date +%s)
 
 LDFLAGS = -z max-page-size=4096
 
@@ -126,6 +128,7 @@ UPROGS=\
 	$U/_cat\
 	$U/_echo\
 	$U/_ptable\
+	$U/_date\
 	$U/_forktest\
 	$U/_grep\
 	$U/_init\

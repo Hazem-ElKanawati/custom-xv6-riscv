@@ -1,3 +1,4 @@
+#include "datetime.h"
 struct stat;
 struct pinfo {
   int pid;
@@ -6,6 +7,7 @@ struct pinfo {
   char name[16];
   uint64 memsize;
 };
+
 
 // system calls
 int fork(void);
@@ -30,7 +32,7 @@ char* sbrk(int);
 int sleep(int);
 int uptime(void);
 int getptable(int nproc, struct pinfo *buf);
-
+int datetime( struct datetime *dt);
 
 // ulib.c
 int stat(const char*, struct stat*);
@@ -46,7 +48,5 @@ void* memset(void*, int, uint);
 int atoi(const char*);
 int memcmp(const void *, const void *, uint);
 void *memcpy(void *, const void *, uint);
-
-// umalloc.c
 void* malloc(uint);
 void free(void*);

@@ -6,6 +6,7 @@
 #include "spinlock.h"
 #include "proc.h"
 #include "pinfo.h"
+#include "datetime.h"
 
 uint64
 sys_exit(void)
@@ -106,4 +107,19 @@ sys_getptable(void)
   argaddr(1, &ubuf);
 
   return getptable(nproc, (char*)ubuf);
+}
+
+uint64
+sys_datetime(void)
+{
+  uint64 user_addr;
+  argaddr(0, &user_addr);
+
+  struct datetime dt;
+  datetime(&dt);
+
+  if(copyout(myproc()->pagetable, user_addr, (char*)&dt, sizeof(dt)) < 0)
+    return -1;
+
+  return 0;
 }
