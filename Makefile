@@ -143,6 +143,7 @@ UPROGS=\
 	$U/_rand\
 	$U/_uptime\
 	$U/_diff\
+	$U/_cp\
 
 fs.img: mkfs/mkfs README $(UPROGS)
 	mkfs/mkfs fs.img README $(UPROGS)
