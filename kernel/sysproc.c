@@ -27,6 +27,19 @@ sys_fork(void)
   return fork();
 }
 
+
+
+uint64
+sys_shutdown(void)
+{
+  // Write the QEMU finisher magic value to the mapped address.
+  // We expect virtual address 0x100000 to be mapped to the finisher device.
+  volatile unsigned int *finisher = (volatile unsigned int *)0x100000;
+  *finisher = 0x5555;   // magic value that tells QEMU to exit
+  // Shouldn't return (QEMU exits); but return 0 to satisfy signature.
+  return 0;
+}
+
 uint64
 sys_wait(void)
 {
