@@ -141,6 +141,7 @@ UPROGS=\
 	$U/_zombie\
 	$U/_shutdown\
 	$U/_rand\
+	$U/_uptime\
 
 fs.img: mkfs/mkfs README $(UPROGS)
 	mkfs/mkfs fs.img README $(UPROGS)
