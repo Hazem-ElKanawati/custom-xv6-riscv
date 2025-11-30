@@ -23,6 +23,8 @@ char* sbrk(int);
 int sleep(int);
 int uptime(void);
 int shutdown(void);
+int rand(void);
+
 
 // ulib.c
 int stat(const char*, struct stat*);
