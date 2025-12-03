@@ -128,7 +128,7 @@ UPROGS=\
 	$U/_cat\
 	$U/_echo\
 	$U/_ptable\
-	$U/_date\
+	$U/_datetime\
 	$U/_forktest\
 	$U/_grep\
 	$U/_init\
@@ -142,7 +142,6 @@ UPROGS=\
 	$U/_stressfs\
 	$U/_usertests\
 	$U/_grind\
-	$U/_date\
 	$U/_touch\
 	$U/_wc\
 	$U/_find\
