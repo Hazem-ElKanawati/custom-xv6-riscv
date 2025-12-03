@@ -146,6 +146,7 @@ UPROGS=\
 	$U/_wc\
 	$U/_find\
 	$U/_getppid\
+	$U/_schedtest\
 	$U/_zombie\
 
 fs.img: mkfs/mkfs README $(UPROGS)

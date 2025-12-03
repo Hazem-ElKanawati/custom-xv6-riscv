@@ -110,6 +110,7 @@ int             either_copyin(void *dst, int user_src, uint64 src, uint64 len);
 void            procdump(void);
 int             datetime(struct datetime *dt);
 uint64          sys_datetime(void);
+void            update_time(void);
 
 
 // swtch.S
