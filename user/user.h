@@ -1,6 +1,5 @@
 #ifndef USER_H
 #define USER_H
-
 // user-space type definitions
 typedef unsigned int   uint;
 typedef unsigned long  uint64;

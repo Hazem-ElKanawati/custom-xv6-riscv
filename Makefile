@@ -145,6 +145,7 @@ UPROGS=\
 	$U/_touch\
 	$U/_wc\
 	$U/_find\
+	$U/_ps\
 	$U/_getppid\
 	$U/_schedtest\
 	$U/_zombie\
