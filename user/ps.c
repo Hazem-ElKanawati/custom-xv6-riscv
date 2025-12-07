@@ -12,7 +12,7 @@ main(int argc, char *argv[])
     exit(1);
   }
 
-  printf("PID\tPPID\tSTATE\tMEM\tNAME\n");
+  printf("PID\tPPID\tSTATE\tSIZE\tNAME\n");
 
   for(int i = 0; i < n; i++){
     if(buf[i].pid == 0)

@@ -6,7 +6,6 @@ typedef unsigned long  uint64;
 
 // forward declarations only (no kernel headers here)
 struct stat;
-struct pinfo;
 struct datetime;
 
 struct pinfo {

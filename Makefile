@@ -127,7 +127,6 @@ mkfs/mkfs: mkfs/mkfs.c $K/fs.h $K/param.h
 UPROGS=\
 	$U/_cat\
 	$U/_echo\
-	$U/_ptable\
 	$U/_datetime\
 	$U/_forktest\
 	$U/_grep\
@@ -146,7 +145,6 @@ UPROGS=\
 	$U/_wc\
 	$U/_find\
 	$U/_ps\
-	$U/_getppid\
 	$U/_schedtest\
 	$U/_zombie\
 

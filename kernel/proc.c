@@ -743,7 +743,7 @@ getptable(int nproc, char *buffer)
   if(nproc < 1 || buffer == 0)
     return 0;
 
-  struct pinfo kptable[nproc];
+  struct pinfo kptable[nproc]; // creates a kernal table to fill by the nproc
   int count = 0;
 
   struct proc *p;
