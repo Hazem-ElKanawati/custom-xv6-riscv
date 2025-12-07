@@ -105,6 +105,7 @@ extern uint64 sys_getptable(void);
 extern uint64 sys_datetime(void);
 extern uint64 sys_getppid(void);
 extern uint64 sys_kbdint(void);
+extern uint64 sys_countsyscall(void);
 
 // An array mapping syscall numbers from syscall.h
 // to the function that handles the system call.
@@ -133,10 +134,12 @@ static uint64 (*syscalls[])(void) = {
 [SYS_datetime]    sys_datetime,
 [SYS_getppid] sys_getppid,
 [SYS_getptable]   sys_getptable,
-[SYS_kbdint]  sys_kbdint
+[SYS_kbdint]  sys_kbdint,
+[SYS_countsyscall] sys_countsyscall,
 
 };
 
+uint64 syscall_count = 0;
 void
 syscall(void)
 {
@@ -145,6 +148,7 @@ syscall(void)
 
   num = p->trapframe->a7;
   if(num > 0 && num < NELEM(syscalls) && syscalls[num]) {
+    syscall_count++;
     // Use num to lookup the system call function for num, call it,
     // and store its return value in p->trapframe->a0
     p->trapframe->a0 = syscalls[num]();

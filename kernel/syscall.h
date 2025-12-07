@@ -24,3 +24,4 @@
 #define SYS_datetime 23
 #define SYS_getppid 24
 #define SYS_kbdint  25
+#define SYS_countsyscall 26

@@ -154,6 +154,7 @@ UPROGS=\
 	$U/_add\
 	$U/_mv\
 	$U/_kbdint\
+	$U/_countsyscall\
 
 fs.img: mkfs/mkfs README $(UPROGS)
 	mkfs/mkfs fs.img README $(UPROGS)

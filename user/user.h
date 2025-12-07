@@ -43,6 +43,7 @@ int getptable(int nproc, struct pinfo *buf);
 int datetime( struct datetime *dt);
 int getppid(void);
 int kbdint(void);
+int countsyscall(void);
 
 // ulib.c
 int stat(const char*, struct stat*);
