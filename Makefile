@@ -148,6 +148,8 @@ UPROGS=\
 	$U/_schedtest\
 	$U/_zombie\
 	$U/_fact\
+	$U/_tail\
+	$U/_writelines\
 
 fs.img: mkfs/mkfs README $(UPROGS)
 	mkfs/mkfs fs.img README $(UPROGS)
