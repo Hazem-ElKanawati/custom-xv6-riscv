@@ -39,3 +39,4 @@ entry("uptime");
 entry("getptable");
 entry("datetime");
 entry("getppid");
+entry("kbdint");

@@ -23,3 +23,4 @@
 #define SYS_getptable 22
 #define SYS_datetime 23
 #define SYS_getppid 24
+#define SYS_kbdint  25

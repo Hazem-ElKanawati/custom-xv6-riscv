@@ -42,6 +42,7 @@ int uptime(void);
 int getptable(int nproc, struct pinfo *buf);
 int datetime( struct datetime *dt);
 int getppid(void);
+int kbdint(void);
 
 // ulib.c
 int stat(const char*, struct stat*);
