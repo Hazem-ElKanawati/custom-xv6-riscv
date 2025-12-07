@@ -150,6 +150,7 @@ UPROGS=\
 	$U/_fact\
 	$U/_tail\
 	$U/_writelines\
+	$U/_add\
 
 fs.img: mkfs/mkfs README $(UPROGS)
 	mkfs/mkfs fs.img README $(UPROGS)
