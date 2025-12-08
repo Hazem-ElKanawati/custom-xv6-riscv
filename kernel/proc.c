@@ -7,11 +7,19 @@
 #include "defs.h"
 #include "pinfo.h"
 
+
+uint64 total_waiting_time = 0;
+uint64 total_turnaround_time = 0;
+uint64 completed_processes = 0;
+struct spinlock statslock; // Lock to protect the counters
+
 struct cpu cpus[NCPU];
 
 struct proc proc[NPROC];
 
 struct proc *initproc;
+
+uint next_sched_index = 1; // increment for each allocproc to break ties
 
 int nextpid = 1;
 struct spinlock pid_lock;
@@ -51,10 +59,13 @@ procinit(void)
   struct proc *p;
 
   initlock(&pid_lock, "nextpid");
+
+  // ADD THIS LINE:
+  initlock(&statslock, "statslock");
+
   initlock(&wait_lock, "wait_lock");
   for(p = proc; p < &proc[NPROC]; p++) {
       initlock(&p->lock, "proc");
-      p->state = UNUSED;
       p->kstack = KSTACK((int) (p - proc));
   }
 }
@@ -108,6 +119,8 @@ allocpid()
 // and return with p->lock held.
 // If there are no free procs, or a memory allocation fails, return 0.
 static struct proc*
+// kernel/proc.c
+
 allocproc(void)
 {
   struct proc *p;
@@ -146,9 +159,18 @@ found:
   memset(&p->context, 0, sizeof(p->context));
   p->context.ra = (uint64)forkret;
   p->context.sp = p->kstack + PGSIZE;
-  // initialize new variables here
+
+  // --- SCHEDULING INITIALIZATION ---
   p->creation_time = ticks;
+  p->start_time = 0;
+  p->end_time = 0;
+
   p->run_time = 0;
+  p->waiting_time = 0;
+
+  // CRITICAL: Default to lowest priority (1).
+  // This allows setpriority to raise it later.
+  p->priority = 1;
 
   return p;
 }
@@ -175,6 +197,14 @@ freeproc(struct proc *p)
   p->state = UNUSED;
   p->creation_time = ticks;
   p->run_time = 0;
+  p->creation_time = 0;
+  p->start_time = 0;
+  p->end_time = 0;
+  p->run_time = 0;
+  p->waiting_time = 0;
+  p->priority = 0;
+  p->sched_index = 0;
+
 }
 
 // Create a user page table for a given process, with no user memory,
@@ -349,6 +379,9 @@ reparent(struct proc *p)
 // Exit the current process.  Does not return.
 // An exited process remains in the zombie state
 // until its parent calls wait().
+// kernel/proc.c
+// kernel/proc.c
+
 void
 exit(int status)
 {
@@ -371,6 +404,35 @@ exit(int status)
   end_op();
   p->cwd = 0;
 
+  // ---------------------------------------------------------
+  // METRICS REPORTING & TRACKING
+  // ---------------------------------------------------------
+
+  // 1. Capture the End Time
+  p->end_time = ticks;
+
+  // 2. Calculate Turnaround Time (End - Creation)
+  // (waiting_time and run_time are already updated by trap.c)
+  uint turnaround = p->end_time - p->creation_time;
+
+  // 3. Update Global Statistics (For Average Calculation)
+  // We must hold the statslock to safely add to the global totals
+  acquire(&statslock);
+  total_waiting_time += p->waiting_time;
+  total_turnaround_time += turnaround;
+  completed_processes++;
+  release(&statslock);
+
+  // 4. Print Individual Report (Optional, but good for debugging)
+  printf("[Stats] PID %d Finished.\n", p->pid);
+  printf("  - Creation Time:   %d ticks\n", p->creation_time);
+  printf("  - End Time:        %d ticks\n", p->end_time);
+  printf("  - Run Time:        %d ticks\n", p->run_time);
+  printf("  - Waiting Time:    %d ticks\n", p->waiting_time);
+  printf("  - Turnaround Time: %d ticks\n", turnaround);
+
+  // ---------------------------------------------------------
+
   acquire(&wait_lock);
 
   // Give any children to init.
@@ -390,9 +452,6 @@ exit(int status)
   sched();
   panic("zombie exit");
 }
-
-// Wait for a child process to exit and return its pid.
-// Return -1 if this process has no children.
 int
 wait(uint64 addr)
 {
@@ -448,41 +507,84 @@ wait(uint64 addr)
 //  - eventually that process transfers control
 //    via swtch back to the scheduler.
 
-void
-update_time()
+void update_time(void)
 {
-  struct proc* p;
-  for (p = proc; p < &proc[NPROC]; p++) {
+  struct proc *p;
+  for(p = proc; p < &proc[NPROC]; p++){
     acquire(&p->lock);
-    if (p->state == RUNNING) {
+    if(p->state == RUNNING){
       p->run_time++;
+      if(p->start_time == 0) p->start_time = ticks; // record first run
+    } else if(p->state == RUNNABLE){
+      p->waiting_time++;
     }
-
     release(&p->lock);
   }
 }
 
 int sched_mode = SCHED_ROUND_ROBIN;  // Assign the chosen scheduler here
-struct proc *choose_next_process() {
-
+struct proc* choose_next_process(void) {
   struct proc *p;
+  struct proc *best = 0;
 
-  if(sched_mode == SCHED_ROUND_ROBIN) {
-    for(p = proc; p < &proc[NPROC]; p++) {
-      if (p->state == RUNNABLE)
+  if (sched_mode == SCHED_ROUND_ROBIN) {
+    // simple: first RUNNABLE encountered
+    for(p = proc; p < &proc[NPROC]; p++){
+      acquire(&p->lock);
+      if(p->state == RUNNABLE){
+        release(&p->lock); // scheduler will re-acquire
         return p;
       }
+      release(&p->lock);
+    }
+    return 0;
   }
-  // else if (sched_mode == SCHED_FCFS) {
-  //   // TODO
-  //   return p;
-  // }
 
-  // Add more else statements each time you create a new scheduler
+  else if (sched_mode == SCHED_FCFS) {
+    // pick RUNNABLE with smallest creation_time (earliest arrival)
+    for(p = proc; p < &proc[NPROC]; p++){
+      acquire(&p->lock);
+      if(p->state == RUNNABLE){
+        if(!best || p->creation_time < best->creation_time ||
+           (p->creation_time == best->creation_time && p->sched_index < best->sched_index)){
+          if(best) release(&best->lock);
+          best = p; // keep lock on best
+        } else {
+          release(&p->lock);
+        }
+      } else {
+        release(&p->lock);
+      }
+    }
+    return best;
+  }
+
+  else if (sched_mode == SCHED_PRIORITY) {
+    // pick RUNNABLE with lowest priority value
+    for(p = proc; p < &proc[NPROC]; p++){
+      acquire(&p->lock);
+      if(p->state == RUNNABLE){
+        if(!best || p->priority < best->priority ||
+           (p->priority == best->priority && p->creation_time < best->creation_time)) {
+          if(best) release(&best->lock);
+          best = p;
+        } else {
+          release(&p->lock);
+        }
+      } else {
+        release(&p->lock);
+      }
+    }
+    return best;
+  }
 
   return 0;
 }
 
+
+// Inside kernel/proc.c, in the scheduler(void) function:
+
+// kernel/proc.c
 
 void
 scheduler(void)
@@ -492,45 +594,88 @@ scheduler(void)
 
   c->proc = 0;
   for(;;){
-    // The most recent process to run may have had interrupts
-    // turned off; enable them to avoid a deadlock if all
-    // processes are waiting.
     intr_on();
 
-    int found = 0;
-
-    p = choose_next_process();
-
-    if(p != 0) {
-      acquire(&p->lock);
-
-      if (p->state == RUNNABLE) {
+    // 1. PRIORITY SCHEDULING
+    if (sched_mode == SCHED_PRIORITY) {
+      struct proc *high_p = 0;
+      for(p = proc; p < &proc[NPROC]; p++) {
+        acquire(&p->lock);
+        if(p->state == RUNNABLE) {
+          if(high_p == 0 || p->priority > high_p->priority) {
+            if(high_p != 0) release(&high_p->lock);
+            high_p = p;
+            continue;
+          }
+        }
+        release(&p->lock);
+      }
+      if(high_p != 0) {
+        p = high_p;
         p->state = RUNNING;
         c->proc = p;
         swtch(&c->context, &p->context);
-
-        // Process is done running for now.
-        // It should have changed its p->state before coming back.
         c->proc = 0;
-        found = 1;
+        release(&p->lock);
       }
-      release(&p->lock);
     }
-    if(found == 0) {
-      // nothing to run; stop running on this core until an interrupt.
-      intr_on();
-      asm volatile("wfi");
+    // 2. FCFS SCHEDULING (NEW)
+    else if (sched_mode == SCHED_FCFS) {
+      struct proc *min_p = 0;
+      // Find oldest process (smallest creation_time)
+      for(p = proc; p < &proc[NPROC]; p++) {
+        acquire(&p->lock);
+        if(p->state == RUNNABLE) {
+          if(min_p == 0 || p->creation_time < min_p->creation_time) {
+            if(min_p != 0) release(&min_p->lock);
+            min_p = p;
+            continue;
+          }
+        }
+        release(&p->lock);
+      }
+      // Run the oldest one found
+      if(min_p != 0) {
+        p = min_p;
+        p->state = RUNNING;
+        c->proc = p;
+        swtch(&c->context, &p->context);
+        c->proc = 0;
+        release(&p->lock);
+      }
+    }
+    // 3. ROUND ROBIN (DEFAULT)
+    else {
+      for(p = proc; p < &proc[NPROC]; p++) {
+        acquire(&p->lock);
+        if(p->state == RUNNABLE) {
+          p->state = RUNNING;
+          c->proc = p;
+          swtch(&c->context, &p->context);
+          c->proc = 0;
+        }
+        release(&p->lock);
+      }
     }
   }
 }
+// kernel/proc.c
 
-// Switch to scheduler.  Must hold only p->lock
-// and have changed proc->state. Saves and restores
-// intena because intena is a property of this
-// kernel thread, not this CPU. It should
-// be proc->intena and proc->noff, but that would
-// break in the few places where a lock is held but
-// there's no process.
+// Add this function (make sure to add prototype in defs.h)
+void
+update_proc_stats(void)
+{
+  struct proc *p;
+  for(p = proc; p < &proc[NPROC]; p++){
+    acquire(&p->lock);
+    if(p->state == RUNNABLE) {
+      p->waiting_time++;
+    } else if (p->state == RUNNING) {
+      p->run_time++;
+    }
+    release(&p->lock);
+  }
+}
 void
 sched(void)
 {
@@ -769,4 +914,38 @@ getptable(int nproc, char *buffer)
     return 0;
 
   return 1;
+}
+// kernel/proc.c
+
+uint64
+sys_print_stats(void)
+{
+  acquire(&statslock);
+
+  if(completed_processes == 0){
+    printf("No processes finished yet.\n");
+    release(&statslock);
+    return 0;
+  }
+
+  printf("\n--- Performance Metrics ---\n");
+
+  // FIX: Cast variables to (int) to match %d
+  printf("Total Processes:     %d\n", (int)completed_processes);
+
+  printf("Average Waiting Time:    %d ticks\n",
+         (int)(total_waiting_time / completed_processes));
+
+  printf("Average Turnaround Time: %d ticks\n",
+         (int)(total_turnaround_time / completed_processes));
+
+  printf("---------------------------\n");
+
+  // Reset counters for the next test run
+  total_waiting_time = 0;
+  total_turnaround_time = 0;
+  completed_processes = 0;
+
+  release(&statslock);
+  return 0;
 }

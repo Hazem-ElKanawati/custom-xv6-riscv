@@ -61,5 +61,8 @@ int memcmp(const void *, const void *, uint);
 void *memcpy(void *, const void *, uint);
 void* malloc(uint);
 void free(void*);
+int setsched(int);
+int setpriority(int, int);
+int print_stats(void);
 
 #endif

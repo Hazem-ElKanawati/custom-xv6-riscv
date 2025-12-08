@@ -9,6 +9,10 @@ struct pinfo {
   int state;
   char name[16];
   uint64 memsize;
+  uint64 creation_time;
+  uint64 run_time;
+  uint64 waiting_time;
+  uint end_time;
 };
 
 #endif

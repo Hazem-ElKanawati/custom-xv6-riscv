@@ -1,46 +1,67 @@
 #include "kernel/types.h"
 #include "kernel/stat.h"
 #include "user/user.h"
-#include "kernel/fcntl.h"
 
+// Ensure these match what you defined in your kernel
+#define SCHED_ROUND_ROBIN 0
+#define SCHED_FCFS        1
+#define SCHED_PRIORITY    2
 
-int main(int argc, char *argv[]) {
-
-  int pid;
-  int k, nprocess = 10;
-  int z, steps = 1000000;
-  char buffer_src[1024], buffer_dst[1024];
-
-
-  for (k = 0; k < nprocess; k++) {
-    // ensure different creation times (proc->ctime)
-    // needed for properly testing FCFS scheduling
-    sleep(2);
-
-    pid = fork();
-    if (pid < 0) {
-      printf("%d failed in fork!\n", getpid());
-      exit(0);
-
-    }
-    else if (pid == 0) {
-      // child
-      printf("[pid=%d] created\n", getpid());
-
-      for (z = 0; z < steps; z += 1) {
-         // copy buffers one inside the other and back
-         // used for wasting cpu time
-         memmove(buffer_dst, buffer_src, 1024);
-         memmove(buffer_src, buffer_dst, 1024);
-      }
-      exit(0);
-    }
+void
+cpu_bound_task(int id, int prio)
+{
+  int x = 0;
+  // Set my own priority
+  if (setpriority(getpid(), prio) < 0) {
+    printf("Error setting priority for %d\n", getpid());
   }
 
-  for (k = 0; k < nprocess; k++) {
-    pid = wait(0);
-    printf("[pid=%d] terminated\n", pid);
+  // Burn CPU time to force scheduling
+  for (volatile int i = 0; i < 100000000; i++) {
+    x += i;
+  }
+  printf("Process %d (Priority %d) finished.\n", id, prio);
+  exit(0);
+}
+
+int
+main(int argc, char *argv[])
+{
+  printf("Starting Scheduler Test...\n");
+
+  // 1. Switch to Priority Scheduler
+  if (setsched(SCHED_PRIORITY) < 0) {
+    printf("Error: setsched failed (did you implement it?)\n");
+    exit(1);
+  }
+  printf("Scheduler set to PRIORITY mode.\n");
+
+  // 2. Fork 3 processes with different priorities
+  // High Priority (should finish 1st)
+  if (fork() == 0) {
+    cpu_bound_task(1, 10);
   }
 
+  // Medium Priority (should finish 2nd)
+  if (fork() == 0) {
+    cpu_bound_task(2, 5);
+  }
+
+  // Low Priority (should finish 3rd)
+  if (fork() == 0) {
+    cpu_bound_task(3, 1);
+  }
+
+  // 3. Wait for all children to finish
+  wait(0);
+  wait(0);
+  wait(0);
+
+  printf("Test finished.\n");
+
+
+  // Reset to default (Round Robin) before exiting
+  setsched(SCHED_ROUND_ROBIN);
+  print_stats();
   exit(0);
 }

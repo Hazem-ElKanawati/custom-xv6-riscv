@@ -106,6 +106,9 @@ extern uint64 sys_datetime(void);
 extern uint64 sys_getppid(void);
 extern uint64 sys_kbdint(void);
 extern uint64 sys_countsyscall(void);
+extern uint64 sys_setsched(void);
+extern uint64 sys_setpriority(void);
+extern uint64 sys_print_stats(void);
 
 // An array mapping syscall numbers from syscall.h
 // to the function that handles the system call.
@@ -136,6 +139,9 @@ static uint64 (*syscalls[])(void) = {
 [SYS_getptable]   sys_getptable,
 [SYS_kbdint]  sys_kbdint,
 [SYS_countsyscall] sys_countsyscall,
+[SYS_setsched] sys_setsched,
+[SYS_setpriority] sys_setpriority,
+[SYS_print_stats] sys_print_stats,
 
 };
 

@@ -193,7 +193,10 @@ void            virtio_disk_rw(struct buf *, int);
 void            virtio_disk_intr(void);
 
 
-
+int setsched(int mode);      // set scheduler mode (0=RR,1=FCFS,2=PRIO)
+int setpriority(int pid, int prio); // set process priority
+int getsched(void);         // optional: get current scheduler mode
+void            update_proc_stats(void);
 
 // number of elements in fixed-size array
 #define NELEM(x) (sizeof(x)/sizeof((x)[0]))

@@ -41,3 +41,7 @@ entry("datetime");
 entry("getppid");
 entry("kbdint");
 entry("countsyscall");
+entry ("setsched");
+entry ("setpriority");
+entry ("getsched");
+entry("print_stats");

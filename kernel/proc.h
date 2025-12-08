@@ -1,7 +1,7 @@
-// Saved registers for kernel context switches.
-// schedular constants to set the scheduling mode
+
 #define SCHED_ROUND_ROBIN 0
 #define SCHED_FCFS        1
+#define SCHED_PRIORITY     2
 
 extern int sched_mode;  // Declare global scheduler mode
 
@@ -111,6 +111,12 @@ struct proc {
   struct inode *cwd;           // Current directory
   char name[16];               // Process name (debugging)
 
-  uint creation_time;          // Ticks when process was created
-  uint run_time;               // How long the process has run
+    // scheduling / accounting fields
+  uint creation_time;      // ticks when process created (ctime)
+  uint start_time;         // first time scheduled (for turnaround)
+  uint end_time;           // time of exit
+  uint run_time;           // total ticks spent RUNNING
+  uint waiting_time;       // total ticks spent ready (RUNNABLE)
+  int  priority;           // smaller -> higher priority (user-settable)
+  int  sched_index;        // optional: insertion order for FCFS tie-break
 };

@@ -11,6 +11,11 @@ uint ticks;
 
 extern char trampoline[], uservec[], userret[];
 
+// Define the scheduler modes here or ensure they match param.h
+// (Assuming SCHED_FCFS is defined in a header like param.h)
+extern int sched_mode;
+void update_proc_stats(void); // Prototype for the stats function
+
 // in kernelvec.S, calls kerneltrap().
 void kernelvec();
 
@@ -77,8 +82,13 @@ usertrap(void)
     exit(-1);
 
   // give up the CPU if this is a timer interrupt.
-  if(which_dev == 2)
-    yield();
+  if(which_dev == 2) {
+    // FCFS Requirement: Non-Preemptive.
+    // We only yield if we are NOT in FCFS mode.
+    if(sched_mode != SCHED_FCFS) {
+       yield();
+    }
+  }
 
   usertrapret();
 }
@@ -151,8 +161,13 @@ kerneltrap()
   }
 
   // give up the CPU if this is a timer interrupt.
-  if(which_dev == 2 && myproc() != 0)
-    yield();
+  if(which_dev == 2 && myproc() != 0 && myproc()->state == RUNNING) {
+    // FCFS Requirement: Non-Preemptive.
+    // Do not yield in FCFS mode.
+    if(sched_mode != SCHED_FCFS) {
+       yield();
+    }
+  }
 
   // the yield() may have caused some traps to occur,
   // so restore trap registers for use by kernelvec.S's sepc instruction.
@@ -163,10 +178,15 @@ kerneltrap()
 void
 clockintr()
 {
+  // Only CPU 0 handles the global system tick updates
   if(cpuid() == 0){
     acquire(&tickslock);
     ticks++;
-    update_time();
+
+    // UPDATE METRICS HERE:
+    // This ensures we increment stats exactly once per global tick.
+    update_proc_stats();
+
     wakeup(&ticks);
     release(&tickslock);
   }

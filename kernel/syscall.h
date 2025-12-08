@@ -25,3 +25,7 @@
 #define SYS_getppid 24
 #define SYS_kbdint  25
 #define SYS_countsyscall 26
+#define SYS_setsched    27   // next free number
+#define SYS_setpriority 28
+#define SYS_getsched    29
+#define SYS_print_stats 30
