@@ -156,6 +156,10 @@ UPROGS=\
 	$U/_kbdint\
 	$U/_countsyscall\
 	$U/_fcfstest\
+	$U/_fcfs_load\
+	$U/_prio_load\
+
+
 
 fs.img: mkfs/mkfs README $(UPROGS)
 	mkfs/mkfs fs.img README $(UPROGS)
