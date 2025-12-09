@@ -157,6 +157,7 @@ UPROGS=\
 	$U/_countsyscall\
 	$U/_fcfstest\
 	$U/_fcfs_load\
+	$U/_getppid\
 	$U/_prio_load\
 
 
