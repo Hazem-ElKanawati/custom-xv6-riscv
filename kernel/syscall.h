@@ -29,3 +29,5 @@
 #define SYS_setpriority 28
 #define SYS_getsched    29
 #define SYS_print_stats 30
+#define SYS_shutdown  31
+#define SYS_rand   32

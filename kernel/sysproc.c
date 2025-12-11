@@ -27,6 +27,32 @@ sys_fork(void)
   return fork();
 }
 
+
+
+uint64
+sys_shutdown(void)
+{
+  // Write the QEMU finisher magic value to the mapped address.
+  // We expect virtual address 0x100000 to be mapped to the finisher device.
+  volatile unsigned int *finisher = (volatile unsigned int *)0x100000;
+  *finisher = 0x5555;   // magic value that tells QEMU to exit
+  // Shouldn't return (QEMU exits); but return 0 to satisfy signature.
+  return 0;
+}
+static uint64 rand_seed = 88172645463325252ULL; // arbitrary non-zero seed
+
+uint64
+sys_rand(void)
+{
+  // LCG constants (64-bit)
+  // seed = seed * a + c
+  rand_seed = rand_seed * 6364136223846793005ULL + 1442695040888963407ULL;
+
+  // return a 32-bit-ish positive integer (lower bits of seed)
+  // Syscall returns 64-bit in kernel; user-level prototype is `int rand(void);`
+  return (uint64)(rand_seed >> 1); // shift to avoid sign bit issues
+}
+
 uint64
 sys_wait(void)
 {

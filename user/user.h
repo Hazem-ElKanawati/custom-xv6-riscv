@@ -44,6 +44,9 @@ int datetime( struct datetime *dt);
 int getppid(void);
 int kbdint(void);
 int countsyscall(void);
+int shutdown(void);
+int rand(void);
+
 
 // ulib.c
 int stat(const char*, struct stat*);

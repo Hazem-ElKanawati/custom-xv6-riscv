@@ -159,8 +159,11 @@ UPROGS=\
 	$U/_fcfs_load\
 	$U/_getppid\
 	$U/_prio_load\
-
-
+	$U/_shutdown\
+	$U/_rand\
+	$U/_uptime\
+	$U/_diff\
+	$U/_cp\
 
 fs.img: mkfs/mkfs README $(UPROGS)
 	mkfs/mkfs fs.img README $(UPROGS)

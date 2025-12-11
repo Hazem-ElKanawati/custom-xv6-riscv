@@ -45,3 +45,5 @@ entry ("setsched");
 entry ("setpriority");
 entry ("getsched");
 entry("print_stats");
+entry("shutdown");
+entry("rand");
