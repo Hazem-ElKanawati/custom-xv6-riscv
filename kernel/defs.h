@@ -9,6 +9,7 @@ struct sleeplock;
 struct stat;
 struct superblock;
 
+#include "datetime.h"
 // bio.c
 void            binit(void);
 struct buf*     bread(uint, uint);
@@ -96,6 +97,7 @@ struct cpu*     mycpu(void);
 struct cpu*     getmycpu(void);
 struct proc*    myproc();
 void            procinit(void);
+int getptable(int nproc, char *buffer);
 void            scheduler(void) __attribute__((noreturn));
 void            sched(void);
 void            sleep(void*, struct spinlock*);
@@ -106,6 +108,10 @@ void            yield(void);
 int             either_copyout(int user_dst, uint64 dst, void *src, uint64 len);
 int             either_copyin(void *dst, int user_src, uint64 src, uint64 len);
 void            procdump(void);
+int             datetime(struct datetime *dt);
+uint64          sys_datetime(void);
+void            update_time(void);
+
 
 // swtch.S
 void            swtch(struct context*, struct context*);
@@ -140,6 +146,7 @@ void            argaddr(int, uint64 *);
 int             fetchstr(uint64, char*, int);
 int             fetchaddr(uint64, uint64*);
 void            syscall();
+uint64          sys_getptable(void);
 
 // trap.c
 extern uint     ticks;
@@ -184,6 +191,12 @@ void            plic_complete(int);
 void            virtio_disk_init(void);
 void            virtio_disk_rw(struct buf *, int);
 void            virtio_disk_intr(void);
+
+
+int setsched(int mode);      // set scheduler mode (0=RR,1=FCFS,2=PRIO)
+int setpriority(int pid, int prio); // set process priority
+int getsched(void);         // optional: get current scheduler mode
+void            update_proc_stats(void);
 
 // number of elements in fixed-size array
 #define NELEM(x) (sizeof(x)/sizeof((x)[0]))

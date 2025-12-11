@@ -1,4 +1,21 @@
+#ifndef USER_H
+#define USER_H
+// user-space type definitions
+typedef unsigned int   uint;
+typedef unsigned long  uint64;
+
+// forward declarations only (no kernel headers here)
 struct stat;
+struct datetime;
+
+struct pinfo {
+  int pid;
+  int ppid;
+  int state;
+  char name[16];
+  uint64 memsize;
+};
+
 
 // system calls
 int fork(void);
@@ -22,6 +39,11 @@ int getpid(void);
 char* sbrk(int);
 int sleep(int);
 int uptime(void);
+int getptable(int nproc, struct pinfo *buf);
+int datetime( struct datetime *dt);
+int getppid(void);
+int kbdint(void);
+int countsyscall(void);
 
 // ulib.c
 int stat(const char*, struct stat*);
@@ -37,7 +59,10 @@ void* memset(void*, int, uint);
 int atoi(const char*);
 int memcmp(const void *, const void *, uint);
 void *memcpy(void *, const void *, uint);
-
-// umalloc.c
 void* malloc(uint);
 void free(void*);
+int setsched(int);
+int setpriority(int, int);
+int print_stats(void);
+
+#endif
