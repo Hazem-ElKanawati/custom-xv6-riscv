@@ -8,8 +8,10 @@ main(int argc, char *argv[])
     printf("Usage: touch <filename>\n");
     exit(1);
   }
+  //program requires exactly 1 argument, the file name.
 
   char *filename = argv[1];
+  //argv[1] is the string the user typed after touch
 
   // Try to create file using mknod.
   // If the file exists, mknod returns -1.

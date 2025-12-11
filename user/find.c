@@ -27,10 +27,11 @@ fmtname(char *path)
 void
 find(char *path, char *target)
 {
-  char buf[512], *p;
-  int fd;
-  struct dirent de;
-  struct stat st;
+  char buf[512],//working buffer used to build full paths
+  *p; //pointer into buf where the next component will be appended.
+  int fd; //file descriptor returned by open() for the directory (or file).
+  struct dirent de; //to receive directory entries from read().
+  struct stat st; //used to examine whether path is a file or directory and to check entry types.
 
   // Open the directory
   fd = open(path, 0);
@@ -63,7 +64,7 @@ find(char *path, char *target)
       close(fd);
       return;
     }
-
+    // prevent from memory overflow sice the max capacoity of buf is 512
     strcpy(buf, path);
     p = buf + strlen(buf);
     *p++ = '/';
