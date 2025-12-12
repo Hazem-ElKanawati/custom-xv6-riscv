@@ -65,8 +65,8 @@ procinit(void)
 
   initlock(&wait_lock, "wait_lock");
   for(p = proc; p < &proc[NPROC]; p++) {
-      initlock(&p->lock, "proc");
-      p->kstack = KSTACK((int) (p - proc));
+      initlock(&p->lock, "proc"); //protects the individual process's data (like its state RUNNING/RUNNABLE, or its priority)
+      p->kstack = KSTACK((int) (p - proc)); //calculates the memory address where this process's Kernel Stack will live
   }
 }
 
@@ -507,85 +507,23 @@ wait(uint64 addr)
 //  - eventually that process transfers control
 //    via swtch back to the scheduler.
 
-void update_time(void)
+
+int sched_mode = SCHED_ROUND_ROBIN;  // Assign the chosen scheduler here
+
+void
+update_proc_stats(void)
 {
   struct proc *p;
   for(p = proc; p < &proc[NPROC]; p++){
     acquire(&p->lock);
-    if(p->state == RUNNING){
-      p->run_time++;
-      if(p->start_time == 0) p->start_time = ticks; // record first run
-    } else if(p->state == RUNNABLE){
+    if(p->state == RUNNABLE) {
       p->waiting_time++;
+    } else if (p->state == RUNNING) {
+      p->run_time++;
     }
     release(&p->lock);
   }
 }
-
-int sched_mode = SCHED_ROUND_ROBIN;  // Assign the chosen scheduler here
-struct proc* choose_next_process(void) {
-  struct proc *p;
-  struct proc *best = 0;
-
-  if (sched_mode == SCHED_ROUND_ROBIN) {
-    // simple: first RUNNABLE encountered
-    for(p = proc; p < &proc[NPROC]; p++){
-      acquire(&p->lock);
-      if(p->state == RUNNABLE){
-        release(&p->lock); // scheduler will re-acquire
-        return p;
-      }
-      release(&p->lock);
-    }
-    return 0;
-  }
-
-  else if (sched_mode == SCHED_FCFS) {
-    // pick RUNNABLE with smallest creation_time (earliest arrival)
-    for(p = proc; p < &proc[NPROC]; p++){
-      acquire(&p->lock);
-      if(p->state == RUNNABLE){
-        if(!best || p->creation_time < best->creation_time ||
-           (p->creation_time == best->creation_time && p->sched_index < best->sched_index)){
-          if(best) release(&best->lock);
-          best = p; // keep lock on best
-        } else {
-          release(&p->lock);
-        }
-      } else {
-        release(&p->lock);
-      }
-    }
-    return best;
-  }
-
-  else if (sched_mode == SCHED_PRIORITY) {
-    // pick RUNNABLE with lowest priority value
-    for(p = proc; p < &proc[NPROC]; p++){
-      acquire(&p->lock);
-      if(p->state == RUNNABLE){
-        if(!best || p->priority < best->priority ||
-           (p->priority == best->priority && p->creation_time < best->creation_time)) {
-          if(best) release(&best->lock);
-          best = p;
-        } else {
-          release(&p->lock);
-        }
-      } else {
-        release(&p->lock);
-      }
-    }
-    return best;
-  }
-
-  return 0;
-}
-
-
-// Inside kernel/proc.c, in the scheduler(void) function:
-
-// kernel/proc.c
-
 void
 scheduler(void)
 {
@@ -662,20 +600,7 @@ scheduler(void)
 // kernel/proc.c
 
 // Add this function (make sure to add prototype in defs.h)
-void
-update_proc_stats(void)
-{
-  struct proc *p;
-  for(p = proc; p < &proc[NPROC]; p++){
-    acquire(&p->lock);
-    if(p->state == RUNNABLE) {
-      p->waiting_time++;
-    } else if (p->state == RUNNING) {
-      p->run_time++;
-    }
-    release(&p->lock);
-  }
-}
+
 void
 sched(void)
 {

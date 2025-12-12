@@ -3,7 +3,7 @@
 #include "user/user.h"
 
 #define SCHED_FCFS 2  // Ensure this matches your kernel/param.h
-#define NUM_PROCS 10  // 10 processes vs 3 CPUs = GUARANTEED WAITING
+#define NUM_PROCS 45  // 10 processes vs 3 CPUs = GUARANTEED WAITING
 
 void worker(int id) {
   // Heavy work to hold the CPU
