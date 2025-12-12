@@ -101,6 +101,17 @@ extern uint64 sys_unlink(void);
 extern uint64 sys_link(void);
 extern uint64 sys_mkdir(void);
 extern uint64 sys_close(void);
+extern uint64 sys_getptable(void);
+extern uint64 sys_datetime(void);
+extern uint64 sys_getppid(void);
+extern uint64 sys_kbdint(void);
+extern uint64 sys_countsyscall(void);
+extern uint64 sys_setsched(void);
+extern uint64 sys_setpriority(void);
+extern uint64 sys_print_stats(void);
+extern uint64 sys_shutdown(void);
+extern uint64 sys_rand(void);
+
 
 // An array mapping syscall numbers from syscall.h
 // to the function that handles the system call.
@@ -126,8 +137,20 @@ static uint64 (*syscalls[])(void) = {
 [SYS_link]    sys_link,
 [SYS_mkdir]   sys_mkdir,
 [SYS_close]   sys_close,
+[SYS_datetime]    sys_datetime,
+[SYS_getppid] sys_getppid,
+[SYS_getptable]   sys_getptable,
+[SYS_kbdint]  sys_kbdint,
+[SYS_countsyscall] sys_countsyscall,
+[SYS_setsched] sys_setsched,
+[SYS_setpriority] sys_setpriority,
+[SYS_print_stats] sys_print_stats,
+
+[SYS_shutdown] sys_shutdown,
+[SYS_rand]    sys_rand,
 };
 
+uint64 syscall_count = 0;
 void
 syscall(void)
 {
@@ -136,6 +159,7 @@ syscall(void)
 
   num = p->trapframe->a7;
   if(num > 0 && num < NELEM(syscalls) && syscalls[num]) {
+    syscall_count++;
     // Use num to lookup the system call function for num, call it,
     // and store its return value in p->trapframe->a0
     p->trapframe->a0 = syscalls[num]();

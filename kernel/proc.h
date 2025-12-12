@@ -1,4 +1,10 @@
-// Saved registers for kernel context switches.
+
+#define SCHED_ROUND_ROBIN 0
+#define SCHED_FCFS        1
+#define SCHED_PRIORITY     2
+
+extern int sched_mode;  // Declare global scheduler mode
+
 struct context {
   uint64 ra;
   uint64 sp;
@@ -79,7 +85,7 @@ struct trapframe {
   /* 280 */ uint64 t6;
 };
 
-enum procstate { UNUSED, USED, SLEEPING, RUNNABLE, RUNNING, ZOMBIE };
+enum procstate { UNUSED, USED, SLEEPING, RUNNABLE, RUNNING, ZOMBIE }; // sleeping = blocked, running time = time from used -> zombie, runnable = ready, waiting time = time outside the running time
 
 // Per-process state
 struct proc {
@@ -104,4 +110,13 @@ struct proc {
   struct file *ofile[NOFILE];  // Open files
   struct inode *cwd;           // Current directory
   char name[16];               // Process name (debugging)
+
+    // scheduling / accounting fields
+  uint creation_time;      // ticks when process created (ctime)
+  uint start_time;         // first time scheduled (for turnaround)
+  uint end_time;           // time of exit
+  uint run_time;           // total ticks spent RUNNING
+  uint waiting_time;       // total ticks spent ready (RUNNABLE)
+  int  priority;           // smaller -> higher priority (user-settable)
+  int  sched_index;        // optional: insertion order for FCFS tie-break
 };

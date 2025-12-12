@@ -21,6 +21,7 @@ OBJS = \
   $K/bio.o \
   $K/fs.o \
   $K/log.o \
+  $K/datetime.o\
   $K/sleeplock.o \
   $K/file.o \
   $K/pipe.o \
@@ -28,6 +29,7 @@ OBJS = \
   $K/sysfile.o \
   $K/kernelvec.o \
   $K/plic.o \
+  $K/sysutil.o \
   $K/virtio_disk.o
 
 # riscv64-unknown-elf- or riscv64-linux-gnu-
@@ -77,6 +79,7 @@ endif
 ifneq ($(shell $(CC) -dumpspecs 2>/dev/null | grep -e '[^f]nopie'),)
 CFLAGS += -fno-pie -nopie
 endif
+CFLAGS += -DBOOT_EPOCH=$(shell date +%s)
 
 LDFLAGS = -z max-page-size=4096
 
@@ -125,20 +128,42 @@ mkfs/mkfs: mkfs/mkfs.c $K/fs.h $K/param.h
 UPROGS=\
 	$U/_cat\
 	$U/_echo\
+	$U/_datetime\
 	$U/_forktest\
 	$U/_grep\
 	$U/_init\
 	$U/_kill\
 	$U/_ln\
 	$U/_ls\
+	$U/_sleep\
 	$U/_mkdir\
 	$U/_rm\
 	$U/_sh\
 	$U/_stressfs\
 	$U/_usertests\
 	$U/_grind\
+	$U/_touch\
 	$U/_wc\
+	$U/_find\
+	$U/_ps\
+	$U/_schedtest\
 	$U/_zombie\
+	$U/_fact\
+	$U/_tail\
+	$U/_writelines\
+	$U/_add\
+	$U/_mv\
+	$U/_kbdint\
+	$U/_countsyscall\
+	$U/_fcfstest\
+	$U/_fcfs_load\
+	$U/_getppid\
+	$U/_prio_load\
+	$U/_shutdown\
+	$U/_rand\
+	$U/_uptime\
+	$U/_diff\
+	$U/_cp\
 
 fs.img: mkfs/mkfs README $(UPROGS)
 	mkfs/mkfs fs.img README $(UPROGS)

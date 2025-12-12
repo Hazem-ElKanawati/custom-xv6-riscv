@@ -42,7 +42,7 @@ do_rand(unsigned long *ctx)
 unsigned long rand_next = 1;
 
 int
-rand(void)
+grind_rand(void)
 {
     return (do_rand(&rand_next));
 }
@@ -61,12 +61,12 @@ go(int which_child)
     exit(1);
   }
   chdir("/");
-  
+
   while(1){
     iters++;
     if((iters % 500) == 0)
       write(1, which_child?"B":"A", 1);
-    int what = rand() % 23;
+    int what = grind_rand() % 23;
     if(what == 1){
       close(open("grindir/../a", O_CREATE|O_RDWR));
     } else if(what == 2){
@@ -298,7 +298,7 @@ iter()
 {
   unlink("a");
   unlink("b");
-  
+
   int pid1 = fork();
   if(pid1 < 0){
     printf("grind: fork failed\n");

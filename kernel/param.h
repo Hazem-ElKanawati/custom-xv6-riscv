@@ -12,4 +12,7 @@
 #define FSSIZE       2000  // size of file system in blocks
 #define MAXPATH      128   // maximum file path name
 #define USERSTACK    1     // user stack pages
-
+// Example in kernel/param.h
+#define SCHED_ROUND_ROBIN 0
+#define SCHED_FCFS        1
+#define SCHED_PRIORITY    2
