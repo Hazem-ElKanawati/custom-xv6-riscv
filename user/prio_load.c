@@ -2,7 +2,7 @@
 #include "kernel/stat.h"
 #include "user/user.h"
 
-#define SCHED_PRIORITY 3 // Ensure this matches your kernel
+#define SCHED_PRIORITY 2 // Ensure this matches your kernel
 
 void worker(int prio) {
   setpriority(getpid(), prio);
