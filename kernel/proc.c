@@ -414,11 +414,12 @@ exit(int status)
   // 2. Calculate Turnaround Time (End - Creation)
   // (waiting_time and run_time are already updated by trap.c)
   uint turnaround = p->end_time - p->creation_time;
+  uint waiting= turnaround- p->run_time;
 
   // 3. Update Global Statistics (For Average Calculation)
   // We must hold the statslock to safely add to the global totals
   acquire(&statslock);
-  total_waiting_time += p->waiting_time;
+  total_waiting_time += waiting;
   total_turnaround_time += turnaround;
   completed_processes++;
   release(&statslock);
@@ -428,7 +429,7 @@ exit(int status)
   printf("  - Creation Time:   %d ticks\n", p->creation_time);
   printf("  - End Time:        %d ticks\n", p->end_time);
   printf("  - Run Time:        %d ticks\n", p->run_time);
-  printf("  - Waiting Time:    %d ticks\n", p->waiting_time);
+  printf("  - Waiting Time:    %d ticks\n", waiting);
   printf("  - Turnaround Time: %d ticks\n", turnaround);
 
   // ---------------------------------------------------------
